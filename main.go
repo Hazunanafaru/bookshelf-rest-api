@@ -77,13 +77,27 @@ func putBook(c *gin.Context) {
 	}
 }
 
+func deleteBook(c *gin.Context) {
+	id := c.Param("id")
+	index, err := strconv.Atoi(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book not found"})
+	}
+
+	for i, b := range books {
+		if b.Id == index {
+			books = append(books[:i], books[i+1:]...)
+		}
+	}
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/books", getBooks)
 	router.GET("/books/:id", getBookById)
 	router.POST("/books", postBook)
 	router.PUT("/books/:id", putBook)
-	// router.DELETE("/books/:id", deleteBook)
+	router.DELETE("/books/:id", deleteBook)
 
 	router.Run("localhost:8080")
 }
