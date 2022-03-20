@@ -1,13 +1,15 @@
 package main
 
 import (
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type book struct {
-	Id         string    `json:"id"`
+	Id         int       `json:"id"`
 	Name       string    `json:"name"`
 	Year       int       `json:"year"`
 	Author     string    `json:"author"`
@@ -23,13 +25,65 @@ type book struct {
 
 var books = []book{}
 
+func getBooks(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, books)
+}
+
+func getBookById(c *gin.Context) {
+	id := c.Param("id")
+	index, err := strconv.Atoi(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book not found"})
+	}
+
+	for _, b := range books {
+		if b.Id == index {
+			c.IndentedJSON(http.StatusOK, b)
+			return
+		}
+	}
+}
+
+func postBook(c *gin.Context) {
+	var newBook book
+
+	if err := c.BindJSON(&newBook); err != nil {
+		return
+	}
+
+	books = append(books, newBook)
+	c.IndentedJSON(http.StatusCreated, newBook)
+}
+
+func putBook(c *gin.Context) {
+	var updateBook book
+
+	if err := c.BindJSON(&updateBook); err != nil {
+		return
+	}
+
+	id := c.Param("id")
+	index, err := strconv.Atoi(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book not found"})
+	}
+
+	for _, b := range books {
+		if b.Id == index {
+			books[index] = updateBook
+			c.IndentedJSON(http.StatusCreated, b)
+			return
+		}
+	}
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/books", getBooks)
 	router.GET("/books/:id", getBookById)
 	router.POST("/books", postBook)
 	router.PUT("/books/:id", putBook)
-	router.DELETE("/books/:id", deleteBook)
+	// router.DELETE("/books/:id", deleteBook)
 
 	router.Run("localhost:8080")
 }
