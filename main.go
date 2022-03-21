@@ -46,11 +46,18 @@ func getBookById(c *gin.Context) {
 
 func postBook(c *gin.Context) {
 	var newBook book
+	id := len(books) + 1
+	insertedDate := time.Now()
+	updatedDate := insertedDate
 
 	if err := c.BindJSON(&newBook); err != nil {
 		return
 	}
 
+	pNewBook := &newBook
+	pNewBook.Id = id
+	pNewBook.InsertedAt = insertedDate
+	pNewBook.UpdatedAt = updatedDate
 	books = append(books, newBook)
 	c.IndentedJSON(http.StatusCreated, newBook)
 }
@@ -63,32 +70,30 @@ func putBook(c *gin.Context) {
 	}
 
 	id := c.Param("id")
-	index, err := strconv.Atoi(id)
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book not found"})
-	}
+	index, _ := strconv.Atoi(id)
+	pUpdateBook := &updateBook
+	pUpdateBook.UpdatedAt = time.Now()
 
 	for _, b := range books {
 		if b.Id == index {
-			books[index] = updateBook
+			books = append(books[:index], *pUpdateBook)
 			c.IndentedJSON(http.StatusCreated, b)
 			return
 		}
 	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book Id not found"})
 }
 
 func deleteBook(c *gin.Context) {
 	id := c.Param("id")
-	index, err := strconv.Atoi(id)
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book not found"})
-	}
+	index, _ := strconv.Atoi(id)
 
-	for i, b := range books {
+	for _, b := range books {
 		if b.Id == index {
-			books = append(books[:i], books[i+1:]...)
+			books = append(books[:index], books[index+1:]...)
 		}
 	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book Id not found"})
 }
 
 func main() {
