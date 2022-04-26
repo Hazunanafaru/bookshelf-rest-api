@@ -26,19 +26,19 @@ type book struct {
 var books = []book{}
 
 func getBooks(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, books)
+	c.JSON(http.StatusOK, books)
 }
 
 func getBookById(c *gin.Context) {
 	id := c.Param("id")
 	index, err := strconv.Atoi(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "book not found"})
 	}
 
 	for _, b := range books {
 		if b.Id == index {
-			c.IndentedJSON(http.StatusOK, b)
+			c.JSON(http.StatusOK, b)
 			return
 		}
 	}
@@ -55,11 +55,15 @@ func postBook(c *gin.Context) {
 	}
 
 	pNewBook := &newBook
+	if newBook.Author == "" {
+		c.JSON(http.StatusBadRequest, "Book author didn't found")
+	}
+
 	pNewBook.Id = id
 	pNewBook.InsertedAt = insertedDate
 	pNewBook.UpdatedAt = updatedDate
 	books = append(books, newBook)
-	c.IndentedJSON(http.StatusCreated, newBook)
+	c.JSON(http.StatusCreated, id)
 }
 
 func putBook(c *gin.Context) {
@@ -77,11 +81,11 @@ func putBook(c *gin.Context) {
 	for _, b := range books {
 		if b.Id == index {
 			books = append(books[:index], *pUpdateBook)
-			c.IndentedJSON(http.StatusCreated, b)
+			c.JSON(http.StatusCreated, b)
 			return
 		}
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book Id not found"})
+	c.JSON(http.StatusNotFound, gin.H{"message": "book Id not found"})
 }
 
 func deleteBook(c *gin.Context) {
@@ -93,7 +97,7 @@ func deleteBook(c *gin.Context) {
 			books = append(books[:index], books[index+1:]...)
 		}
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "book Id not found"})
+	c.JSON(http.StatusNotFound, gin.H{"message": "book Id not found"})
 }
 
 func main() {

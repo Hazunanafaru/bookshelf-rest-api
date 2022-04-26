@@ -1,11 +1,15 @@
 package main
 
-import "testing"
+import (
+	"bytes"
+	"net/http"
+	"testing"
+)
 
-func TestPOST( t*testing.T) {
+func TestPOST(t *testing.T) {
+	postUrl := "localhost:8080/books"
+	// Want to post a book
 	t.Run("post a book", func(t *testing.T) {
-		url := "localhost:8080/books"
-
 		var jsonStr = []byte(`{
 			"Name": "Either/Or",
 			"Year": 1843,
@@ -17,15 +21,33 @@ func TestPOST( t*testing.T) {
 			"Reading": true,
 			"Finished": false,
 		}`)
-    	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-		if err != nil {
-			t.Errorf("cannot post book")
-		}
 
-		
+		req, err := http.NewRequest("POST", postUrl, bytes.NewBuffer(jsonStr))
+		if err != nil {
+			t.Errorf("Cannot post book. Got %v", req)
+		}
+	})
+
+	// Want to post a missing author book
+	t.Run("post a missing author book", func(t *testing.T) {
+		var jsonStr = []byte(`{
+			"Name": "Dalang dibalik G30SPKI",
+			"Year": 1990,
+			"Author": "",
+			"Summary": "Dalang",
+			"Publisher": "Majalah Obor",
+			"PageCount": 240,
+			"ReadPage": 0,
+			"Reading": false,
+			"Finished": false,
+		}`)
+		req, err := http.NewRequest("POST", postUrl, bytes.NewBuffer(jsonStr))
+		if err == nil {
+			t.Errorf("Should shown an error. Got %v", req)
 		}
 	})
 }
-func TestGET( t*testing.T) {}
-func TestPUT( t*testing.T) {}
-func TestDELETE( t*testing.T) {}
+
+// func TestGET(t *testing.T)    {}
+// func TestPUT(t *testing.T)    {}
+// func TestDELETE(t *testing.T) {}
